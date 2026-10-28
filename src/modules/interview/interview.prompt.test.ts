@@ -19,7 +19,11 @@ test("tidyQuestion: 접두어와 따옴표 제거", () => {
 
 test("parseReport: 코드블록이 섞여도 JSON을 찾고, 형식이 틀리면 null", () => {
   const ok = { scores: { "직무 이해도": 4, "근거와 구체성": 3, "논리 구조": 4, 전달력: 5, "태도와 진정성": 4, "질문 의도 파악": 3 }, feedback: "좋음" };
-  assert.deepEqual(parseReport("```json\n" + JSON.stringify(ok) + "\n```"), ok);
+  const withAnswers = { ...ok, modelAnswers: [{ order: 1, answer: "예시 답변" }] };
+  assert.deepEqual(parseReport("```json\n" + JSON.stringify(withAnswers) + "\n```"), withAnswers);
+  // 모범 답변이 없거나 형식이 틀려도 리포트는 만들어진다
+  assert.deepEqual(parseReport(JSON.stringify(ok)), { ...ok, modelAnswers: [] });
+  assert.deepEqual(parseReport(JSON.stringify({ ...ok, modelAnswers: "엉터리" })), { ...ok, modelAnswers: [] });
   assert.equal(parseReport("JSON 없음"), null);
   assert.equal(parseReport(JSON.stringify({ ...ok, scores: { ...ok.scores, 전달력: 9 } })), null);
   assert.equal(parseReport(JSON.stringify({ scores: {}, feedback: "x" })), null);
