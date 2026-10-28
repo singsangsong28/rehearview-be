@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { AppError } from "./lib/errors.ts";
 import { authRouter } from "./modules/auth/auth.router.ts";
+import { oauthRouter } from "./modules/auth/oauth.router.ts";
 
 export const app = express();
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN ?? "http://localhost:3000", credentials: true }));
@@ -13,6 +14,7 @@ app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
 app.use("/auth", authRouter);
+app.use("/auth", oauthRouter);
 
 // 비동기 핸들러에서 던진 에러도 여기로 온다 (Express 5)
 app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
