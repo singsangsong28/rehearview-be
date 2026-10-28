@@ -7,6 +7,8 @@ import { oauthRouter } from "./modules/auth/oauth.router.ts";
 import { interviewRouter } from "./modules/interview/interview.router.ts";
 
 export const app = express();
+// Vercel·Caddy 뒤에서 실제 접속자 IP(요청 제한 기준)를 읽으려면 거쳐 오는 프록시 단계 수를 TRUST_PROXY 로 알려 준다
+if (process.env.TRUST_PROXY) app.set("trust proxy", Number(process.env.TRUST_PROXY));
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN ?? "http://localhost:3000", credentials: true }));
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
