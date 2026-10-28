@@ -54,7 +54,8 @@ npm run dev              # http://localhost:4000
 | `KAKAO_SCOPE` | 카카오 동의항목(예: `account_email`). 콘솔에서 동의항목을 설정한 뒤 사용 |
 | `GEMINI_API_KEY`, `GEMINI_MODEL` | AI(질문 생성·분석·리포트) 기본 제공사. 모델 기본값은 `gemini-3.6-flash` (무료 티어는 모델별 하루 한도가 작아 바꿔 쓸 수 있게 했습니다) |
 | `GROQ_API_KEY`, `CF_ACCOUNT_ID`, `CF_API_TOKEN` | 폴백 AI 제공사 (선택). 키가 있는 제공사만 순서대로 시도합니다 |
-| `LLM_TIMEOUT_MS` | AI 응답 대기 시간(기본 20000, 운영은 60000) |
+| `LLM_TIMEOUT_MS` | AI 한 번의 응답을 기다리는 시간(기본 20000, 운영은 60000) |
+| `LLM_MAX_WAIT_MS` | 모든 AI 제공사가 한도 초과·과부하일 때 에러 대신 기다렸다 다시 시도하는 최대 시간(기본 90000). 프론트 프록시 대기(3분)보다 짧게 둡니다 |
 | `INTERVIEW_DAILY_LIMIT`, `ANALYSIS_DAILY_LIMIT`, `POSTING_FETCH_DAILY_LIMIT` | 사용자별 하루 면접 시작 · 서류 분석 · 공고 불러오기 횟수 제한 |
 | `SMTP_USER`, `SMTP_PASS`, `SMTP_HOST`, `MAIL_FROM` | 메일 발송(Gmail SMTP, 앱 비밀번호). `SMTP_USER`·`SMTP_PASS`가 없으면 링크를 콘솔에 출력합니다 |
 | `TRUST_PROXY` | 앞단 프록시 단계 수. 요청 제한이 접속자별로 걸리게 하려면 운영에서 `1`로 둡니다 |
