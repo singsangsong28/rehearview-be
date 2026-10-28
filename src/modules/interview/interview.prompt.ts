@@ -58,13 +58,17 @@ function systemPrompt(s: Setup, resume: string) {
   ].join("\n");
 }
 
+// 무료 AI 서비스는 분당·하루 토큰 한도가 작아서, 매 요청에 실리는 지난 답변은 앞부분만 보낸다 (방금 한 답변은 전부 보낸다).
+const OLD_ANSWER_MAX_CHARS = 600;
+const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0, max)}…` : text);
+
 // 지금까지의 질문·답변과 함께 다음 질문을 요청하는 메시지. 마지막 turn은 방금 받은 답변을 담고 있다.
 export function nextQuestionMessages(s: Setup, resume: string, turns: Turn[], kind: TurnKind): Message[] {
   const messages: Message[] = [{ role: "system", content: systemPrompt(s, resume) }];
-  for (const t of turns) {
+  turns.forEach((t, i) => {
     messages.push({ role: "assistant", content: t.question });
-    if (t.answer !== null) messages.push({ role: "user", content: maskPii(t.answer) });
-  }
+    if (t.answer !== null) messages.push({ role: "user", content: maskPii(i === turns.length - 1 ? t.answer : clip(t.answer, OLD_ANSWER_MAX_CHARS)) });
+  });
   const instruction =
     kind === "FOLLOW_UP"
       ? "[지시] 면접관으로서 방금 답변의 내용을 파고드는 꼬리질문을 하나만 하세요. 질문만 출력하세요."
@@ -104,7 +108,8 @@ export function analyzeMessages(resume: string, ctx: AnalyzeContext = {}): Messa
               "공고의 요건과 서류의 내용이 맞는지는 서류의 사실만으로 판단하고, 확인되지 않으면 '확인 필요'라고 적습니다.",
             ].join("\n")
           : "",
-        `전체 길이는 ${ctx.posting ? "6,000" : "4,000"}자 이내로 합니다.`,
+        // 이 브리프가 질문마다 AI에 다시 실리므로 짧을수록 무료 토큰 한도를 아낀다
+        `전체 길이는 ${ctx.posting ? "4,500" : "3,000"}자 이내로 합니다.`,
       ]
         .filter(Boolean)
         .join("\n"),
