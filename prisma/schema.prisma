@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum InterviewType {
+  COMPREHENSIVE
+  COMPETENCY
+  PERSONALITY
+  EXECUTIVE
+  CULTURE_FIT
+}
+
+enum Intensity {
+  MILD
+  NORMAL
+  SPICY
+}
+
+// 지원 구분: 질문의 초점이 달라진다 (신입은 잠재력·학습 경험, 경력직은 성과·전문성, 이직은 전환 동기와 전이 역량)
+enum CareerLevel {
+  NEW_GRAD
+  EXPERIENCED
+  CAREER_CHANGE
+}
+
+enum InterviewStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum TurnKind {
+  MAIN
+  FOLLOW_UP
+}
+
+enum TokenPurpose {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
+model User {
+  id            String              @id @default(cuid())
+  // 이메일을 주지 않는 소셜 계정도 가입되므로 nullable
+  email         String?             @unique
+  emailVerified DateTime?
+  // 소셜 전용 가입자는 null
+  passwordHash  String?
+  // 비밀번호 변경·재설정 시 올려서 기존 JWT를 무효화
+  tokenVersion  Int                 @default(0)
+  // 약관·개인정보 처리 동의 기록: 동의한 문서 버전과 시각 (버전이 바뀌면 다시 동의받는다)
+  consentVersion String?
+  consentAt      DateTime?
+  createdAt     DateTime            @default(now())
+  accounts      Account[]
+  tokens        VerificationToken[]
+  interviews    Interview[]
+}
+
+model Account {
+  id                String @id @default(cuid())
+  userId            String
+  provider          String
+  providerAccountId String
+  user              User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+// 토큰 원문은 저장하지 않고 해시만 저장, 1회용
+model VerificationToken {
+  id        String       @id @default(cuid())
+  userId    String
+  tokenHash String       @unique
+  purpose   TokenPurpose
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Interview {
+  id        String          @id @default(cuid())
+  userId    String
+  company   String
+  // 직군은 목록 선택 + 직접 입력이라 enum 없이 문자열
+  field     String
+  role      String
+  type      InterviewType
+  intensity Intensity
+  // 기존 면접은 경력직으로 간주
+  career    CareerLevel     @default(EXPERIENCED)
+  status    InterviewStatus @default(IN_PROGRESS)
+  createdAt DateTime        @default(now())
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  turns     Turn[]
+  report    Report?
+
+  @@index([userId, createdAt])
+}
+
+model Turn {
+  id          String    @id @default(cuid())
+  interviewId String
+  order       Int
+  question    String
+  // 답변 전에는 null
+  answer      String?
+  kind        TurnKind  @default(MAIN)
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+
+  @@unique([interviewId, order])
+}
+
+model Report {
+  id          String    @id @default(cuid())
+  interviewId String    @unique
+  // 6축 채점 { 축이름: 점수 }
+  scores      Json
+  feedback    String
+  createdAt   DateTime  @default(now())
+  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+}
