@@ -1,0 +1,63 @@
+name: CI/CD
+
+# PR에서는 타입 체크와 테스트만 돌리고, main 에 병합(푸시)되면 테스트 통과 후 서버에 배포한다.
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [main]
+
+# 같은 PR 의 이전 실행은 취소하지만, 배포는 도중에 끊기지 않게 취소하지 않는다
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: rehearview
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/rehearview
+      JWT_SECRET: ci-only-secret-not-used-anywhere-else-0123456789
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
+      - run: npm run typecheck
+      # test 스크립트가 --env-file=.env 를 쓰므로 빈 파일을 만들어 둔다 (값은 위 env 로 들어간다)
+      - run: touch .env && npm test
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      # 서버의 배포 전용 키는 deploy/deploy.sh 한 가지만 실행하도록 제한돼 있다 (docs/배포.md 참고)
+      - name: SSH 로 서버 배포
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=yes "ubuntu@$SSH_HOST"
