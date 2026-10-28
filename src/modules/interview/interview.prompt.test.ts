@@ -12,6 +12,14 @@ test("지원 구분에 따라 질문 지침이 달라진다", () => {
   assert.ok(!sys("NEW_GRAD").includes("경력직 지원자"));
 });
 
+test("nextQuestionMessages: 지난 답변은 앞부분만, 방금 한 답변은 전부 보낸다", () => {
+  const long = "가".repeat(2_000);
+  const msgs = nextQuestionMessages(setup, "서류", [{ question: "q1", answer: long }, { question: "q2", answer: long }], "MAIN");
+  const answers = msgs.filter((m) => m.role === "user").map((m) => m.content);
+  assert.ok(answers[0].length < 700 && answers[0].endsWith("…"));
+  assert.ok(answers[1].startsWith(long)); // 마지막 답변은 그대로 (뒤에 지시문이 붙는다)
+});
+
 test("tidyQuestion: 접두어와 따옴표 제거", () => {
   assert.equal(tidyQuestion('면접관: "가장 큰 성과는 무엇인가요?"'), "가장 큰 성과는 무엇인가요?");
   assert.equal(tidyQuestion("  Q2. 왜 이직하나요?  "), "왜 이직하나요?");
