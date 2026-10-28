@@ -1,0 +1,16 @@
+# /etc/systemd/system/rehearview-backend.service
+# 경로(WorkingDirectory)와 사용자(User)는 서버에 맞게 바꾼다. 환경변수는 WorkingDirectory 의 .env 에서 읽는다.
+[Unit]
+Description=Rehearview backend
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=rehearview
+WorkingDirectory=/opt/rehearview-be
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node --env-file=.env src/index.ts
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
