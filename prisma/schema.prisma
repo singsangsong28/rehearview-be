@@ -124,6 +124,8 @@ model Report {
   // 6축 채점 { 축이름: 점수 }
   scores      Json
   feedback    String
+  // 질문별 모범 답변 예시 [{ order, answer }]. 이 기능 이전에 만든 리포트는 빈 배열
+  modelAnswers Json     @default("[]")
   createdAt   DateTime  @default(now())
   interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
 }

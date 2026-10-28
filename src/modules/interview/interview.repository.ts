@@ -37,9 +37,9 @@ export const interviewRepository = {
       prisma.turn.create({ data: { interviewId, order, question, kind } }),
     ]),
 
-  saveReport: (interviewId: string, scores: Record<string, number>, feedback: string) =>
+  saveReport: (interviewId: string, scores: Record<string, number>, feedback: string, modelAnswers: { order: number; answer: string }[]) =>
     prisma.$transaction([
-      prisma.report.create({ data: { interviewId, scores, feedback } }),
+      prisma.report.create({ data: { interviewId, scores, feedback, modelAnswers } }),
       prisma.interview.update({ where: { id: interviewId }, data: { status: "COMPLETED" } }),
     ]),
 
