@@ -99,7 +99,7 @@ export const interviewService = {
 
     const parsed = parseReport(await ask(reportMessages(interview, interview.turns, resume)));
     if (!parsed) throw new AppError(502, "리포트를 만들지 못했습니다. 다시 시도해 주세요");
-    await repo.saveReport(interview.id, parsed.scores, parsed.feedback);
+    await repo.saveReport(interview.id, parsed.scores, parsed.feedback, parsed.modelAnswers);
     return (await owned(userId, id)).report;
   },
 

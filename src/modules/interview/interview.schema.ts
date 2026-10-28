@@ -39,4 +39,6 @@ const score = z.number().int().min(1).max(5);
 export const reportOutputSchema = z.object({
   scores: z.object(Object.fromEntries(REPORT_AXES.map((a) => [a, score])) as Record<(typeof REPORT_AXES)[number], typeof score>),
   feedback: z.string().trim().min(1).max(5_000),
+  // 모범 답변은 덤이라 형식이 틀려도 리포트 전체를 실패시키지 않고 비운다
+  modelAnswers: z.array(z.object({ order: z.number().int().min(1), answer: z.string().trim().min(1).max(2_000) })).max(20).catch([]),
 });

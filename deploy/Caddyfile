@@ -1,4 +1,8 @@
-# 서브도메인을 실제 주소로 바꿔서 /etc/caddy/Caddyfile 에 넣는다. 인증서(HTTPS)는 Caddy 가 자동으로 발급·갱신한다.
-YOUR-SUBDOMAIN.duckdns.org {
-	reverse_proxy localhost:4000
+# /etc/caddy/Caddyfile 에 넣는다. 인증서(HTTPS)는 Caddy 가 자동으로 발급·갱신한다.
+# Vercel 이 알려 주는 접속자 IP(X-Vercel-Forwarded-For)를 X-Forwarded-For 로 넘겨 백엔드가 사용자별로 요청 제한을 걸 수 있게 한다.
+# 한계: 백엔드 주소로 직접 요청하는 사람이 이 헤더를 위조하면 요청 제한을 피할 수 있다. 필요해지면 Vercel 요청 서명 검증을 추가한다.
+api.rehearview.shop {
+	reverse_proxy localhost:4000 {
+		header_up X-Forwarded-For {header.X-Vercel-Forwarded-For}
+	}
 }
