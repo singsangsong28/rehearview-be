@@ -18,7 +18,7 @@ main() {
   # 서비스가 다시 뜰 때까지 기다리며 헬스 체크
   for _ in $(seq 1 15); do
     if curl -fsS http://localhost:4000/health >/dev/null; then
-      echo "배포 완료: $(git rev-parse --short HEAD)"
+      echo "배포 완료: $(as_app git rev-parse --short HEAD)"
       return 0
     fi
     sleep 2
