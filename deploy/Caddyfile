@@ -1,0 +1,4 @@
+# 서브도메인을 실제 주소로 바꿔서 /etc/caddy/Caddyfile 에 넣는다. 인증서(HTTPS)는 Caddy 가 자동으로 발급·갱신한다.
+YOUR-SUBDOMAIN.duckdns.org {
+	reverse_proxy localhost:4000
+}
