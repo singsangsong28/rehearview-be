@@ -12,7 +12,7 @@ const dailyLimit = () => Number(process.env.INTERVIEW_DAILY_LIMIT ?? 5);
 const analysisDailyLimit = () => Number(process.env.ANALYSIS_DAILY_LIMIT ?? 20);
 // 공고 주소 불러오기는 서버가 대신 외부 사이트에 접속하는 기능이라 남용을 막으려고 하루 횟수를 제한한다
 const postingDailyLimit = () => Number(process.env.POSTING_FETCH_DAILY_LIMIT ?? 30);
-const PROFILE_MAX_CHARS = 8_000;
+const PROFILE_MAX_CHARS = 5_000; // 질문마다 AI에 실리는 브리프 길이 상한 (무료 토큰 한도 절약)
 
 // TODO: 메모리 기반이라 서버가 여러 대면 대수별로 따로 센다. 서버를 재시작하면 초기화된다. 배포 구성이 정해지면 DB나 Redis로.
 const usage = new Map<string, number>();
