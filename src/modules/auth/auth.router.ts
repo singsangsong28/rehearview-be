@@ -2,6 +2,7 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { authController as c } from "./auth.controller.ts";
 import { requireAuth } from "./auth.middleware.ts";
+import { verifyTurnstile } from "./turnstile.ts";
 
 // 비밀번호 무차별 대입이나 메일 도배가 가능한 POST 요청에만 건다.
 // /auth/me, 로그아웃, 소셜 로그인 시작·콜백은 정상 사용 중에도 자주 불리므로 제외한다.
@@ -19,7 +20,7 @@ export const authRouter = Router();
 
 authRouter.post("/signup", limiter, c.signup);
 authRouter.post("/verify", limiter, c.verifyEmail);
-authRouter.post("/login", limiter, c.login);
+authRouter.post("/login", verifyTurnstile, limiter, c.login); // 봇 검증을 요청 제한보다 앞에 둔다
 authRouter.post("/logout", c.logout);
 authRouter.get("/me", requireAuth, c.me);
 authRouter.post("/consent", requireAuth, c.consent);
