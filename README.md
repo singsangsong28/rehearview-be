@@ -58,6 +58,7 @@ npm run dev              # http://localhost:4000
 | `LLM_MAX_WAIT_MS` | 모든 AI 제공사가 한도 초과·과부하일 때 에러 대신 기다렸다 다시 시도하는 최대 시간(기본 90000). 프론트 프록시 대기(3분)보다 짧게 둡니다 |
 | `INTERVIEW_DAILY_LIMIT`, `ANALYSIS_DAILY_LIMIT`, `POSTING_FETCH_DAILY_LIMIT` | 사용자별 하루 면접 시작 · 서류 분석 · 공고 불러오기 횟수 제한 |
 | `SMTP_USER`, `SMTP_PASS`, `SMTP_HOST`, `MAIL_FROM` | 메일 발송(Gmail SMTP, 앱 비밀번호). `SMTP_USER`·`SMTP_PASS`가 없으면 링크를 콘솔에 출력합니다 |
+| `TURNSTILE_SECRET_KEY` | 로그인 봇 검증(Cloudflare Turnstile) 비밀키. 비우면 검증을 건너뜁니다(로컬·CI). 운영에서는 프론트의 `NEXT_PUBLIC_TURNSTILE_SITE_KEY`와 **반드시 함께** 넣습니다 |
 | `TRUST_PROXY` | 앞단 프록시 단계 수. 요청 제한이 접속자별로 걸리게 하려면 운영에서 `1`로 둡니다 |
 
 ## API 요약
